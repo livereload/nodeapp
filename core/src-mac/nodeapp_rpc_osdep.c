@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/select.h>
+#include <sys/stat.h>
 
 #include <signal.h>
 #include <errno.h>
@@ -58,6 +59,16 @@ restart_node:
     nodeapp_reset();
 
     start_time = time(NULL);
+    
+    struct stat st;
+    if (0 != stat(nodeapp_bundled_node_path, &st)) {
+        nodeapp_invoke_on_main_thread((INVOKE_LATER_FUNC)nodeapp_emergency_shutdown_backend_crashed, "The bundled Node.js runtime cannot be found. The application is damaged and must be reinstalled.");
+        return NULL;
+    }
+    if (0 != stat(nodeapp_bundled_backend_js, &st)) {
+        nodeapp_invoke_on_main_thread((INVOKE_LATER_FUNC)nodeapp_emergency_shutdown_backend_crashed, "The bundled backend code cannot be found. The application is damaged and must be reinstalled.");
+        return NULL;
+    }
 
     result = pipe(pipe_stdin);
     assert(result == 0);
@@ -154,9 +165,17 @@ restart_node:
             sleep(3);
             goto restart_node;
         }
+        
+        char *message;
+        if (WIFEXITED(exit_status))
+            message = str_printf("Backend process has quit with exit status %d.", WEXITSTATUS(exit_status));
+        else if (WIFSIGNALED(exit_status))
+            message = str_printf("Backend process has crashed with signal 0x%x.", WSTOPSIG(exit_status));
+        else
+            message = str_printf("Backend process has terminated for an unknown reason with exit status 0x%x.", exit_status);
 
         nodeapp_is_shut_down = true;
-        nodeapp_invoke_on_main_thread((INVOKE_LATER_FUNC)nodeapp_emergency_shutdown_backend_crashed, NULL);
+        nodeapp_invoke_on_main_thread((INVOKE_LATER_FUNC)nodeapp_emergency_shutdown_backend_crashed, message);
     }
     fprintf(stderr, "app:  Node terminated.\n");
 

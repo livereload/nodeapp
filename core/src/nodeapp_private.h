@@ -3,7 +3,7 @@
 
 #include "nodeapp.h"
 
-void nodeapp_emergency_shutdown_backend_crashed();
+void nodeapp_emergency_shutdown_backend_crashed(const char *reason);
 
 void nodeapp_compute_paths();
 void nodeapp_compute_paths_osdep();
