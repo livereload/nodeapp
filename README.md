@@ -542,3 +542,46 @@ Here's the recipe for a project:
 * build your model layer in Node.js, optionally using the reactive dependency tracking library
 
 * add the necessary bits of native code to handle stuff that you cannot or do not want to do in JavaScript
+
+
+## Creating the skeleton app from scratch
+
+1. Put NodeApp into `nodeapp/` subfolder of your repository. Preferably, add it as a submodule.
+
+2. Add ‘nodeapp’ folder to Xcode (don't “copy items into destination group's folder”, do “create groups for any added folders”). Remove:
+
+        nodeapp/*/src-win
+        nodeapp/fsmonitor/libs/fsmonitor/{demo,**/*win32*}
+
+3. Add app_config.h to your source files. (It should be shared between platforms.) Copy the contents from somewhere, adjust to your taste.
+
+4. Add per-platform app_version.h file with a contents like this:
+
+    #define NODEAPP_VERSION "2.5.0"
+
+5. Change superclass of your app delegate to NodeAppDelegate. Change your `applicationDidFinishLaunching:` to call super. (If something needs to be initialized before the Node backend fires up, be sure to do it before calling super.)
+
+6. Create a Rakefile with the following contents:
+
+        #!/usr/bin/env ruby
+        # -*- encoding: utf-8 -*-
+
+        require 'rake/clean'
+
+        Dir['tasks/*.rb'].each { |file| require file }
+        Dir['nodeapp/*/tasks/*.rb'].each { |file| require file }
+
+        MacVersion = VersionTasks.new('ver:mac', 'app/mac/Info.plist', %w(app/mac/src/app_version.h))
+
+        RoutingTasks.new(
+          :app_src        => 'LiveReload,Shared',
+          :gen_src        => 'Shared/gen_src',
+          :messages_json  => 'backend/config/client-messages.json',
+          :api_dumper_js  => 'backend/bin/livereload-backend-print-apis.js'
+        )
+
+    (VersionTasks one is optional, and is used to keep your Info.plist in sync with your app_version.h. Be sure to specify your own paths if you use this line.)
+
+7. Magically create a Node.js side of the RPC system, including that `print-apis.js` file mentioned on step 2.
+
+8. Run `rake routing`.
