@@ -49,6 +49,14 @@ json_t *json_object_2(const char *key1, json_t *value1, const char *key2, json_t
     return result;
 }
 
+json_t *json_object_3(const char *key1, json_t *value1, const char *key2, json_t *value2, const char *key3, json_t *value3) {
+    json_t *result = json_object();
+    json_object_set_new(result, key1, value1);
+    json_object_set_new(result, key2, value2);
+    json_object_set_new(result, key3, value3);
+    return result;
+}
+
 json_t *json_object_extract(json_t *object, const char *key) {
     json_t *value = json_object_get(object, key);
     json_autodecref(json_incref(value));

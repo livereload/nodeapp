@@ -102,6 +102,7 @@ int jsonp_str_equal(const void *ptr1, const void *ptr2);
     
 json_t *json_object_1(const char *key1, json_t *value1);
 json_t *json_object_2(const char *key1, json_t *value1, const char *key2, json_t *value2);
+json_t *json_object_3(const char *key1, json_t *value1, const char *key2, json_t *value2, const char *key3, json_t *value3);
 json_t *json_object_extract(json_t *object, const char *key);
 
 #define json_object_get_string(obj, key) (json_string_value(json_object_get(obj, key)))
