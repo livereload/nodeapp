@@ -91,7 +91,7 @@ restart_node:
         }
         close(pipe_stdout[0]);
 
-        execl(nodeapp_bundled_node_path, "node", nodeapp_bundled_backend_js, NULL);
+        execl(nodeapp_bundled_node_path, "node", nodeapp_bundled_backend_js, "rpc", "server", NULL);
 
         writes(STDOUT_FILENO, "Failed to launch: ");
         writes(STDOUT_FILENO, nodeapp_bundled_node_path);
